@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/activiti?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+    xa:
+      properties:
+        pinGlobalTxToPhysicalConnection: true
+        useServerPrepStmts: true
+    type: com.alibaba.druid.pool.DruidDataSource
+  thymeleaf:
+    mode: HTML
+    encoding: utf-8
+    cache: false
+  application:
+    name: activiti
+  mvc:
+    static-path-pattern: /static/**
+  #activiti相关配置
+  activiti:
+    check-process-definitions: true  #配置是否扫描默认配置目录的流程定义文件,并且自动部署
+    database-schema-update: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+mybatis:
+  # 映射文件位置
+  mapper-locations: classpath:mapper/*.xml
+  # 别名扫描包
+  type-aliases-package: com.activiti.study.activiti.dao
+  # 输出SQL执行语句
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
