@@ -46,30 +46,38 @@ public class DemoController {
      */
     @ApiOperation(value = "启动流程实例并且完成请假申请", notes = "启动流程实例并且完成请假申请")
     @GetMapping("/testStartProcessInstance")
-    public void testStartProcessInstance(@RequestParam("procdefKey") String procdefKey){
+    public void testStartProcessInstance(@RequestParam("procdefKey") String procdefKey,String vacationDay){
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(procdefKey);
         Task vacationApply = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
-        Map<String,Object> param = new HashMap<>();
+        Map<String,String> param = new HashMap<>();
+        param.put("reason","reason原因");
         param.put("users","1,2,3,4,5");
+        param.put("vacationDay",vacationDay);
+//        taskService.setVariable(vacationApply.getId(),"users","1,2,3,4,5");
         taskService.setAssignee(vacationApply.getId(),"张三");
-        taskService.complete(vacationApply.getId(),param);
+        formService.submitTaskFormData(vacationApply.getId(),param);
     }
     /**
      * 3.查询代办任务
      */
     @ApiOperation(value = "查询代办任务", notes = "查询代办任务")
     @GetMapping("/taskToDoQuery")
-    public List<Task> queryTaskToDo(String taskAssignee){
-        List<Task> tasks = taskService.createTaskQuery().taskCandidateOrAssigned(taskAssignee).list();
-        return tasks;
+    public List<Task> queryTaskToDo(String userId){
+        //查询代办个人任务
+        List<Task> tasks = taskService.createTaskQuery().taskAssignee(userId).list();
+        //查询代办组任务
+        List<Task> groupTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
+        //查询所有代办组任务
+        List<Task> allTasks = taskService.createTaskQuery().taskCandidateOrAssigned(userId).list();
+        return allTasks;
     }
     /**
      * 3.查询已完成任务
      */
     @ApiOperation(value = "查询已完成任务", notes = "查询已完成任务")
     @GetMapping("/taskDidQuery")
-    public List<HistoricTaskInstance> queryTaskDidQuery(String taskAssignee){
-        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().taskAssignee(taskAssignee).list();
+    public List<HistoricTaskInstance> queryTaskDidQuery(String userId){
+        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).list();
         return tasks;
     }
     /**
@@ -77,20 +85,20 @@ public class DemoController {
      */
     @ApiOperation(value = "经理完成任务并且指定总经理", notes = "经理完成任务并且指定总经理")
     @GetMapping("/managerConfirmTask")
-    public void managerConfirmTask(String taskId){
+    public void managerConfirmTask(String taskId,String groupId){
         Map<String,Object> param = new HashMap<>();
-        param.put("groupId","1");
-        taskService.setAssignee(taskId,"admin");
+        param.put("groupId",groupId);
+        taskService.setAssignee(taskId,"manager");
         taskService.complete(taskId,param); //查看act_ru_task数据表
     }
 
     /**
-     * 5.总经理认领任务
+     * 5.认领任务
      */
-    @ApiOperation(value = "教务处主任完成任务", notes = "教务处主任完成任务")
+    @ApiOperation(value = "认领任务", notes = "认领任务")
     @GetMapping("/claimTask")
-    public void claimTask(String taskId){
-        taskService.claim(taskId,"总经理1");
+    public void claimTask(String taskId,String userId){
+        taskService.claim(taskId,userId);
     }
     /**
      * 0.建立用户以及用户组
@@ -100,15 +108,15 @@ public class DemoController {
     public void createUserAndGroup(){
         //项目中每创建一个新用户，对应的要创建一个Activiti用户
         //两者的userId和userName一致
-        User admin=identityService.newUser("admin");
-        admin.setLastName("admin");
+        User admin=identityService.newUser("user1");
+        admin.setLastName("topManager");
         identityService.saveUser(admin);
         //项目中每创建一个角色，对应的要创建一个Activiti用户组
-        Group adminGroup=identityService.newGroup("1");
-        adminGroup.setName("admin");
+        Group adminGroup=identityService.newGroup("5");
+        adminGroup.setName("topManagerGroup");
         identityService.saveGroup(adminGroup);
         //用户与用户组关系绑定
-        identityService.createMembership("admin","1");
+        identityService.createMembership("user1","5");
     }
     /**
      * 6.查询组用户
@@ -123,7 +131,7 @@ public class DemoController {
      * 7.查看流程图
      */
     @ApiOperation(value = "查看流程图", notes = "查看流程图")
-    @RequestMapping(value = "/getFlowImg/{processInstanceId}")
+    @GetMapping(value = "/getFlowImg/{processInstanceId}")
     public void getFlowImgByInstantId(@PathVariable("processInstanceId") String processInstanceId, HttpServletResponse response) {
         try {
             System.out.println("processInstanceId:" + processInstanceId);
@@ -131,5 +139,40 @@ public class DemoController {
         } catch (IOException e) {
             logger.error("查看流程图失败:" + e.getMessage(),e);
         }
+    }
+    /**
+     * 8.任务委托
+     */
+    @ApiOperation(value = "任务委托", notes = "任务委托")
+    @GetMapping(value = "/deputeTask")
+    public void deputeTask(String taskId,String userId) {
+        String owner = taskService.createTaskQuery().taskId(taskId).singleResult().getAssignee();
+//        taskService.setOwner(taskId,owner);
+        taskService.delegateTask(taskId,userId);
+    }
+    /**
+     * 9.完成任务委托
+     */
+    @ApiOperation(value = "完成委托任务", notes = "完成委托任务")
+    @GetMapping(value = "/finishDeputeTask")
+    public void finishDeputeTask(String taskId) {
+        taskService.resolveTask(taskId);
+    }
+    /**
+     * 10.查询待完成委托任务
+     */
+    @ApiOperation(value = "查询待处理的委托任务", notes = "查询待处理的委托任务")
+    @GetMapping(value = "/queryToFinishDeputeTask")
+    public List<Task> queryToFinishDeputeTask(String taskAssignId) {
+        List<Task> tasks = taskService.createTaskQuery().taskOwner(taskAssignId).list();
+        return tasks;
+    }
+    /**
+     * 11.部署流程定义   流程图会自动生成
+     */
+    @ApiOperation(value = "部署流程定义", notes = "部署流程定义")
+    @GetMapping(value = "/deployFlowDefine")
+    public void deployFlowDefine() {
+        repositoryService.createDeployment().name("部署流程定义").addClasspathResource("processes/delopment.bpmn").deploy();
     }
 }
