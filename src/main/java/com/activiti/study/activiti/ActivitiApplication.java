@@ -8,9 +8,7 @@ import org.activiti.spring.boot.SecurityAutoConfiguration;
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 @MapperScan("com.activiti.study.activiti.dao")
 public class ActivitiApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(ActivitiApplication.class, args);
 	}
-
 }

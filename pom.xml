@@ -30,6 +30,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.41</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -51,12 +52,6 @@
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-spring-boot-starter-basic</artifactId>
 			<version>6.0.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.persistence</groupId>
-					<artifactId>persistence-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
         <dependency>
             <groupId>io.springfox</groupId>
@@ -90,6 +85,10 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+					<addResources>true</addResources>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

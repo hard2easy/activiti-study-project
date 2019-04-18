@@ -123,7 +123,7 @@ public class DemoController {
      * 7.查看流程图
      */
     @ApiOperation(value = "查看流程图", notes = "查看流程图")
-    @RequestMapping(value = "/getFlowImg/{processInstanceId}")
+    @GetMapping(value = "/getFlowImg/{processInstanceId}")
     public void getFlowImgByInstantId(@PathVariable("processInstanceId") String processInstanceId, HttpServletResponse response) {
         try {
             System.out.println("processInstanceId:" + processInstanceId);
@@ -131,5 +131,19 @@ public class DemoController {
         } catch (IOException e) {
             logger.error("查看流程图失败:" + e.getMessage(),e);
         }
+    }
+    /**
+     * 7.查看流程图
+     */
+    @ApiOperation(value = "手动部署流程定义", notes = "手动部署流程定义")
+    @GetMapping(value = "/deployFlowDefine")
+    public void deployFlowDefine() {
+        repositoryService.createDeployment().name("apply").addClasspathResource("processes/apply.bpmn").deploy();
+    }
+    @ApiOperation(value = "异步任务",notes = "异步任务")
+    @GetMapping(value = "/asycJob")
+    public void asycJob(){
+        ProcessInstance asycJobInstance = runtimeService.startProcessInstanceByKey("asycJob");
+        System.out.println(asycJobInstance.getActivityId());
     }
 }
