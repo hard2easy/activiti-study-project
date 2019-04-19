@@ -35,12 +35,6 @@
           <omgdc:Bounds height="65.0" width="95.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="_10" id="Shape-_10">
-        <omgdc:Bounds height="32.0" width="32.0" x="1240.0" y="565.0"/>
-        <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="_6" id="BPMNEdge__6" sourceElement="_2" targetElement="_4">
         <omgdi:waypoint x="37.0" y="141.0"/>
         <omgdi:waypoint x="155.0" y="142.5"/>

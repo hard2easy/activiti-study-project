@@ -292,6 +292,14 @@ public class DemoController {
         ProcessInstance asycJobInstance = runtimeService.startProcessInstanceByKey("asycJob");
         System.out.println(asycJobInstance.getActivityId());
     }
+
+    /**
+     * 定时任务设置定时的时候可以通过三种形式
+     *      Date       详细的时间  2019-04-19T14:00:00
+     *      Duration   PT5M   5分钟后触发
+     *      cycle      支持cron表达式
+     * @throws Exception
+     */
     @ApiOperation(value = "定时任务",notes = "定时任务")
     @GetMapping(value = "/timeJob")
     public void timeJob() throws Exception{
