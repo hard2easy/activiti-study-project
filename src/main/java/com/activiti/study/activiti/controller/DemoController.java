@@ -11,6 +11,7 @@ import org.activiti.engine.identity.User;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
+import org.activiti.engine.runtime.Job;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
@@ -280,6 +281,11 @@ public class DemoController {
     public void dealJob() {
 
     }
+
+    /**
+     * 异步任务需要打开异步执行器的开关 配置在application.yml中
+     *   async-executor-activate
+     */
     @ApiOperation(value = "异步任务",notes = "异步任务")
     @GetMapping(value = "/asycJob")
     public void asycJob(){
@@ -298,9 +304,21 @@ public class DemoController {
         Thread.sleep(10000);
         runtimeService.activateProcessInstanceById(asycJobInstance.getId());
     }
+
+    /**
+     * 无法执行任务,任务相关查询可以使用如下方法
+     *   managementService.createJobQuery();                act_ru_job
+     *   managementService.createDeadLetterJobQuery();      act_ru_deadletter_job
+     *   managementService.createSuspendedJobQuery();       act_ru_suspended_job
+     *   managementService.createTimerJobQuery();           act_ru_timer_job
+     * @throws Exception
+     */
     @ApiOperation(value = "无法执行工作",notes = "无法执行工作")
     @GetMapping(value = "/noRunTask")
     public void noRunTask() throws Exception{
         ProcessInstance asycJobInstance = runtimeService.startProcessInstanceByKey("noRunTask");
+        Job job = managementService.createJobQuery().processInstanceId(asycJobInstance.getId()).singleResult();
+        //执行job的时候默认三次执行失败就会记录到无法执行任务记录表中  通过该方法可以设置次数
+        managementService.setJobRetries(job.getId(),1);
     }
 }
