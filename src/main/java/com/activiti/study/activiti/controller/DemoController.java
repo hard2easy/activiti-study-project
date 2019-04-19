@@ -280,4 +280,27 @@ public class DemoController {
     public void dealJob() {
 
     }
+    @ApiOperation(value = "异步任务",notes = "异步任务")
+    @GetMapping(value = "/asycJob")
+    public void asycJob(){
+        ProcessInstance asycJobInstance = runtimeService.startProcessInstanceByKey("asycJob");
+        System.out.println(asycJobInstance.getActivityId());
+    }
+    @ApiOperation(value = "定时任务",notes = "定时任务")
+    @GetMapping(value = "/timeJob")
+    public void timeJob() throws Exception{
+        ProcessInstance asycJobInstance = runtimeService.startProcessInstanceByKey("timeJob");
+        System.out.println(asycJobInstance.getActivityId());
+        //此时就是暂停执行任务
+        Thread.sleep(10000);
+        runtimeService.suspendProcessInstanceById(asycJobInstance.getId());
+        //重新改为待执行定时任务
+        Thread.sleep(10000);
+        runtimeService.activateProcessInstanceById(asycJobInstance.getId());
+    }
+    @ApiOperation(value = "无法执行工作",notes = "无法执行工作")
+    @GetMapping(value = "/noRunTask")
+    public void noRunTask() throws Exception{
+        ProcessInstance asycJobInstance = runtimeService.startProcessInstanceByKey("noRunTask");
+    }
 }
