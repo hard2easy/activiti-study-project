@@ -21,6 +21,7 @@ spring:
   activiti:
     check-process-definitions: true  #配置是否扫描默认配置目录的流程定义文件,并且自动部署
     database-schema-update: true
+    async-executor-activate: true
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
