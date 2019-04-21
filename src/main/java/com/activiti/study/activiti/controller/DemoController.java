@@ -242,7 +242,6 @@ public class DemoController {
 
     /**
      * 完成  receiveTask   该task只能通过调用trigger方法使得流程继续下去
-     * @param executeId
      */
     @ApiOperation(value = "完成receiveTask", notes = "完成receiveTask")
     @GetMapping(value = "/receiveTaskFinish")
@@ -328,5 +327,31 @@ public class DemoController {
         Job job = managementService.createJobQuery().processInstanceId(asycJobInstance.getId()).singleResult();
         //执行job的时候默认三次执行失败就会记录到无法执行任务记录表中  通过该方法可以设置次数
         managementService.setJobRetries(job.getId(),1);
+    }
+    /**
+     * 开始事件
+     */
+    @ApiOperation(value = "开始事件",notes = "开始事件")
+    @GetMapping(value = "/startEvent")
+    public void startEvent(){
+        //见startEvent.bpmn(定时器启动事件)流程图,部署后自动触发该流程图对应的的开始事件
+//        repositoryService.createDeployment().addClasspathResource("processes/startEvent.bpmn").deploy();
+//        long m = runtimeService.createProcessInstanceQuery().processDefinitionKey("startEvent").count();
+//        for (int i=0; i<10;i++){
+//            System.out.println("流程实例数目:" + m);
+//            try {
+//                Thread.sleep(6000);
+//                m = runtimeService.createProcessInstanceQuery().processDefinitionKey("startEvent").count();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        //消息开始时间   messageName系统唯一
+//        repositoryService.createDeployment().addClasspathResource("processes/messageStartEvent.bpmn").deploy();
+//        ProcessInstance message = runtimeService.startProcessInstanceByMessage("message");
+//        System.out.println(message.getId());
+        //错误开始事件    错误开始时间只能适用于事件子流程  设计器拖拽子流程设置由事件触发->事件子流程
+        repositoryService.createDeployment().addClasspathResource("processes/errorStartEvent.bpmn").deploy();
+        runtimeService.startProcessInstanceByKey("errorStartEvent");
     }
 }
