@@ -56,14 +56,14 @@ public class DemoController {
     @GetMapping("/testStartProcessInstance")
     public void testStartProcessInstance(@RequestParam("procdefKey") String procdefKey,String vacationDay){
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(procdefKey);
-        Task vacationApply = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
-        Map<String,String> param = new HashMap<>();
-        param.put("reason","reason原因");
-        param.put("users","1,2,3,4,5");
-        param.put("vacationDay",vacationDay);
+//        Task vacationApply = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+//        Map<String,String> param = new HashMap<>();
+//        param.put("reason","reason原因");
+//        param.put("users","1,2,3,4,5");
+//        param.put("vacationDay",vacationDay);
 //        taskService.setVariable(vacationApply.getId(),"users","1,2,3,4,5");
-        taskService.setAssignee(vacationApply.getId(),"张三");
-        formService.submitTaskFormData(vacationApply.getId(),param);
+//        taskService.setAssignee(vacationApply.getId(),"张三");
+//        formService.submitTaskFormData(vacationApply.getId(),param);
     }
     /**
      * 3.查询代办任务
@@ -354,4 +354,34 @@ public class DemoController {
         repositoryService.createDeployment().addClasspathResource("processes/errorStartEvent.bpmn").deploy();
         runtimeService.startProcessInstanceByKey("errorStartEvent");
     }
+
+    /**
+     * 测试定时边界事件
+     * @throws Exception
+     */
+    @ApiOperation(value = "测试定时边界事件",notes = "测试定时边界事件")
+    @GetMapping(value = "/boundaryEvent")
+    public void boundaryEvent() throws Exception{
+        runtimeService.startProcessInstanceByKey("boundaryEvent1");
+    }
+    /**
+     * 测试信号边界事件-流程回退
+     * @throws Exception
+     */
+    @ApiOperation(value = "测试信号边界事件",notes = "测试信号边界事件")
+    @GetMapping(value = "/signalBoundEvent")
+    public void signalBoundEvent() throws Exception{
+        ProcessInstance signalBoundEvent = runtimeService.startProcessInstanceByKey("signalBoundEvent");
+        Task task = taskService.createTaskQuery().processInstanceId(signalBoundEvent.getId()).singleResult();
+        taskService.complete(task.getId());
+        //发送信号
+        runtimeService.signalEventReceived("boundarySignal");
+    }
+    //1.事务子流程、补偿边界、补偿中间事件都没有找到绘制方法
+    //中间事件   定时、信息中间事件只能捕获     信号中间事件可以捕获也可以抛出
+    //补偿边界触发条件    1.事务子流程触发错误结束事件    2.中间补偿事件发生-抛出型的-(发生后,哪个task需要发生补偿) 就添加补偿边界事件   后执行先补偿
+    //任务可以设置为执行多次,循环执行多次,此时循环多少次就补偿多少次
+    //使用场景:  task1->task2->补偿中间事件抛出   此时两个task都配置补偿,先补偿2->1 并在补偿的serviceTask
+    //中还可以拿到这两个task的本地变量
+    //callActiviti  任务  可以通过key(将key配置为在属性called element中)调用已部署的流程定义并且实例化->流程实例
 }
